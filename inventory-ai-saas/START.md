@@ -11,13 +11,13 @@
 ```bash
 cd inventory-ai-saas/backend
 source venv/bin/activate  # Активируйте виртуальное окружение
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Или если вы в папке backend:
 ```bash
 source venv/bin/activate
-uvicorn app:app --reload
+uvicorn main:app --reload
 ```
 
 Backend запустится на: http://localhost:8000

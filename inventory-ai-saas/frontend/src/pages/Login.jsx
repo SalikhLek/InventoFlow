@@ -7,7 +7,7 @@ import { useThemeMode } from '../theme/ThemeContext';
 
 export default function Login() {
   const { login } = useAuth();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     try {
-      await login(username, password);
+      await login(email, password);
       navigate(from, { replace: true });
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Ошибка входа. Проверьте учетные данные.';
@@ -92,11 +92,13 @@ export default function Login() {
               </Typography>
             </Box>
             <TextField 
-              label="Имя пользователя" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
+              label="Email" 
+              type="email"
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
               required
               fullWidth
+              autoComplete="email"
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
             <TextField 

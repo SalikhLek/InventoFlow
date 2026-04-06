@@ -8,6 +8,7 @@ import { useThemeMode } from '../theme/ThemeContext';
 export default function Register() {
   const { register } = useAuth();
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function Register() {
     e.preventDefault();
     setError('');
     try {
-      await register(username, password);
+      await register(username, email, password);
       navigate('/', { replace: true });
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Ошибка регистрации. Попробуйте снова.';
@@ -98,12 +99,23 @@ export default function Register() {
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
             <TextField 
+              label="Email" 
+              type="email"
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required
+              fullWidth
+              autoComplete="email"
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+            <TextField 
               label="Пароль" 
               type="password" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required
               fullWidth
+              autoComplete="new-password"
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
             {error && (

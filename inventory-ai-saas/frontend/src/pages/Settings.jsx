@@ -115,8 +115,12 @@ export default function Settings() {
                   fullWidth
                   value={passwords.current}
                   onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                  autoComplete="current-password"
-                  name="current_password_hidden"
+                  autoComplete="off"
+                  name="current_password_manual"
+                  inputProps={{ 
+                    autoComplete: 'off',
+                    'data-form-type': 'other'
+                  }}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 />
                 <TextField 

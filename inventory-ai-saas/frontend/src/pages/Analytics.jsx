@@ -41,7 +41,7 @@ export default function Analytics() {
   const isDark = mode === 'dark';
 
   const loadItems = () => {
-    api.get('/items/')
+    api.get('/items/', { params: { limit: 10000, skip: 0 } })
       .then((res) => {
         setItems(res.data);
         const totalValue = res.data.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -67,26 +67,39 @@ export default function Analytics() {
   const loadForecasts = async () => {
     setLoadingForecasts(true);
     const forecastData = {};
-    
-    for (const item of items) {
-      try {
-        const { data } = await api.get(`/items/${item.id}/forecast`, {
-          params: { days: forecastDays, method: forecastMethod }
-        });
+    if (items.length === 0) {
+      setForecasts(forecastData);
+      setLoadingForecasts(false);
+      return;
+    }
+    try {
+      const { data } = await api.post('/items/forecasts/batch', {
+        item_ids: items.map((it) => it.id),
+        days: forecastDays,
+        method: forecastMethod,
+      });
+      const results = data.results || {};
+      for (const item of items) {
+        const r = results[String(item.id)];
+        if (!r || r.error) {
+          if (r?.error) {
+            console.warn(`Ошибка прогноза для товара ${item.id}:`, r.error);
+          }
+          continue;
+        }
         forecastData[item.id] = {
-          forecast: data.forecast.map((val, idx) => ({
+          forecast: r.forecast.map((val, idx) => ({
             день: idx + 1,
             прогноз: val,
-            нижняя: data.lower ? data.lower[idx] : undefined,
-            верхняя: data.upper ? data.upper[idx] : undefined,
+            нижняя: r.lower ? r.lower[idx] : undefined,
+            верхняя: r.upper ? r.upper[idx] : undefined,
           })),
-          usedMethod: data.used_method
+          usedMethod: r.used_method,
         };
-      } catch (err) {
-        console.warn(`Ошибка прогноза для товара ${item.id}:`, err.message);
       }
+    } catch (err) {
+      console.warn('Ошибка пакетного прогноза:', err.message);
     }
-    
     setForecasts(forecastData);
     setLoadingForecasts(false);
   };

@@ -26,9 +26,9 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (username, password) => {
+  const login = useCallback(async (email, password) => {
     try {
-      const { data } = await api.post('/auth/login', { username, password });
+      const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('access_token', data.access_token);
       const me = await api.get('/auth/me');
       setUser(me.data);
@@ -41,10 +41,10 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const register = useCallback(async (username, password) => {
+  const register = useCallback(async (username, email, password) => {
     try {
-      await api.post('/auth/register', { username, password });
-      await login(username, password);
+      await api.post('/auth/register', { username, email, password });
+      await login(email, password);
     } catch (err) {
       if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
         throw new Error('Cannot connect to server. Please make sure the backend is running.');
