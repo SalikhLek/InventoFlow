@@ -2,8 +2,8 @@ import sqlite3
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from database import get_db
-from deps import require_role
+from api.deps import require_role
+from core.database import get_db
 from schemas import User
 
 router = APIRouter(prefix="/admin", tags=["admin"])

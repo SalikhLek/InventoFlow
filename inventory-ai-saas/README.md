@@ -3,14 +3,21 @@
 ```
 inventory-ai-saas/
 ├── backend/
-│   ├── main.py          # FastAPI app (routers, middleware, /metrics)
-│   ├── app.py            # re-exports `app` for `uvicorn app:app`
-│   ├── config.py         # env: INVENTORY_SECRET_KEY, INVENTORY_DB_PATH, CORS_ORIGINS, LOG_LEVEL
-│   ├── database.py       # SQLite, get_db(), transaction()
-│   ├── deps.py           # auth dependencies
-│   ├── routers/          # auth, items, forecast, transactions, companies, api_keys, admin
-│   ├── services/         # forecast_service, sales_history aggregation
-│   ├── repositories/     # users, transactions_repo
+│   ├── main.py                 # точка входа FastAPI, middleware, /metrics, подключение маршрутов
+│   ├── app.py                  # re-export `app` → `uvicorn app:app`
+│   ├── core/                   # конфиг, SQLite, пароли/JWT
+│   │   ├── config.py           # env: INVENTORY_SECRET_KEY, INVENTORY_DB_PATH, CORS_ORIGINS, LOG_LEVEL
+│   │   ├── database.py         # init_db, get_db(), transaction()
+│   │   └── security.py
+│   ├── observability/          # structlog, ASGI middleware, Prometheus-метрики
+│   ├── schemas/                # Pydantic по доменам (auth, items, transactions, …)
+│   ├── repositories/           # SQL-запросы (users, transactions)
+│   ├── services/
+│   │   ├── inventory/          # агрегация sales_history по дням
+│   │   └── forecast/           # Prophet / ARIMA / mean
+│   ├── api/
+│   │   ├── deps.py             # get_current_user, require_role
+│   │   └── routes/             # HTTP: auth, items, forecast, transactions, companies, api_keys, admin
 │   └── requirements.txt
 ├── frontend/
 │   └── src/

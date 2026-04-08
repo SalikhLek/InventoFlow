@@ -5,8 +5,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
-from config import settings
-from database import get_db
+from core.config import settings
+from core.database import get_db
 from repositories import users as users_repo
 from schemas import User
 

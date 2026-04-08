@@ -3,11 +3,11 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from database import get_db, transaction
-from deps import get_current_user
+from api.deps import get_current_user
+from core.database import get_db, transaction
+from core.security import create_access_token, hash_password, verify_password
 from repositories import users as users_repo
 from schemas import LoginRequest, PasswordChange, ProfileUpdate, Token, User, UserCreate
-from security import create_access_token, hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

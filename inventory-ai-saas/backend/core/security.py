@@ -5,7 +5,7 @@ from typing import Any, Optional
 import bcrypt
 from jose import jwt
 
-from config import settings
+from core.config import settings
 
 
 def verify_password(plain_password: str, password_hash: str) -> bool:
