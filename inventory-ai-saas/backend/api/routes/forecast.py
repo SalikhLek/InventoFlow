@@ -4,12 +4,12 @@ from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from database import get_db
-from deps import get_current_user
-from metrics import FORECAST_BATCH_ITEMS, FORECAST_REQUESTS
+from api.deps import get_current_user
+from core.database import get_db
+from observability.metrics import FORECAST_BATCH_ITEMS, FORECAST_REQUESTS
 from schemas import BatchForecastRequest, User
-from services.forecast_service import compute_forecast
-from services.sales_history import aggregate_sales_by_day
+from services.forecast.engine import compute_forecast
+from services.inventory.sales_history import aggregate_sales_by_day
 
 router = APIRouter(prefix="/items", tags=["forecast"])
 

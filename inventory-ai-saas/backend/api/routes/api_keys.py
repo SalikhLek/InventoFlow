@@ -4,10 +4,10 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from database import get_db, transaction
-from deps import get_current_user
+from api.deps import get_current_user
+from core.database import get_db, transaction
+from core.security import generate_api_key
 from schemas import APIKey, APIKeyCreate, User
-from security import generate_api_key
 
 router = APIRouter(prefix="/api-keys", tags=["api-keys"])
 

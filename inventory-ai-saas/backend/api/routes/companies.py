@@ -4,8 +4,8 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from database import get_db, transaction
-from deps import get_current_user, require_role
+from api.deps import get_current_user, require_role
+from core.database import get_db, transaction
 from schemas import Company, CompanyCreate, User
 
 router = APIRouter(prefix="/companies", tags=["companies"])

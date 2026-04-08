@@ -1,9 +1,17 @@
 import logging
 import sys
+import warnings
 
 import structlog
 
-from config import settings
+from core.config import settings
+
+
+def _silence_forecast_library_noise() -> None:
+    """Prophet/CmdStanPy print MCMC progress and warnings to the root logger by default."""
+    for name in ("cmdstanpy", "prophet", "stan"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+    warnings.filterwarnings("ignore", message=r".*n_changepoints.*")
 
 
 def setup_logging() -> None:
@@ -27,3 +35,4 @@ def setup_logging() -> None:
         stream=sys.stdout,
         level=level,
     )
+    _silence_forecast_library_noise()

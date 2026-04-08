@@ -5,11 +5,11 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
-from database import get_db, transaction
-from deps import get_current_user
-from repositories import transactions_repo
+from api.deps import get_current_user
+from core.database import get_db, transaction
+from repositories import transactions as transactions_repo
 from schemas import Transaction, TransactionCreate, User
-from services.sales_history import aggregate_sales_by_day
+from services.inventory.sales_history import aggregate_sales_by_day
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 

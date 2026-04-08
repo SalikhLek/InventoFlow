@@ -1,9 +1,8 @@
-import json
 import sqlite3
 from contextlib import contextmanager
 from typing import Generator
 
-from config import settings
+from core.config import settings
 
 
 def init_db() -> None:
@@ -87,8 +86,6 @@ def init_db() -> None:
 
 
 def get_db() -> Generator[sqlite3.Connection, None, None]:
-    # check_same_thread=False: safe here — one connection per request, not shared across concurrent tasks.
-    # Also avoids edge cases with middleware / worker threads.
     conn = sqlite3.connect(settings.db_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     try:
