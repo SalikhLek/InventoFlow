@@ -17,8 +17,8 @@ def register(user: UserCreate, conn: sqlite3.Connection = Depends(get_db)):
     if users_repo.get_user_by_username(conn, user.username):
         raise HTTPException(status_code=400, detail="Username already exists")
 
-    if len(user.password) < 3:
-        raise HTTPException(status_code=400, detail="Password must be at least 3 characters")
+    if len(user.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
 
     if not user.email or not user.email.strip():
         raise HTTPException(status_code=400, detail="Email is required")
@@ -121,8 +121,8 @@ def change_password(payload: PasswordChange, current_user: User = Depends(get_cu
     if not user_row or not verify_password(payload.current_password, user_row["password_hash"]):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
 
-    if len(payload.new_password) < 3:
-        raise HTTPException(status_code=400, detail="New password must be at least 3 characters")
+    if len(payload.new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
 
     new_hash = hash_password(payload.new_password)
     with transaction(conn):

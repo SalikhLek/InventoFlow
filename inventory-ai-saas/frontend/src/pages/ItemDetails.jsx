@@ -50,6 +50,12 @@ export default function ItemDetails() {
     setLoading(true);
     try {
       const { data } = await api.get(`/items/${id}/forecast`, { params: { days, method } });
+      if (!data.has_data) {
+        alert('У этого товара нет истории продаж. Добавьте транзакции типа «продажа», чтобы получить прогноз.');
+        setForecast([]);
+        setUsedMethod('');
+        return;
+      }
       setUsedMethod(data.used_method);
       const mapped = data.forecast.map((y, i) => ({
         день: i + 1,

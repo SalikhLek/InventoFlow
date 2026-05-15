@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional
+import logging
+from typing import Any, Dict, List
 
 import numpy as np
 from statsmodels.tsa.arima.model import ARIMA
@@ -10,6 +11,11 @@ try:
     PROPHET_AVAILABLE = True
 except ImportError:
     PROPHET_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
+
+# Prophet needs at least this many points for a stable forecast
+_PROPHET_MIN_POINTS = 14
 
 
 def _clean_sales_history(raw: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -26,9 +32,7 @@ def compute_forecast(
     days: int,
     method: str,
 ) -> Dict[str, Any]:
-    """
-    sales_history must already be aggregated by day (one row per date).
-    """
+    """sales_history must already be aggregated by day (one row per date)."""
     if not isinstance(sales_history, list):
         raise ValueError("sales_history should be a list")
 
@@ -36,34 +40,43 @@ def compute_forecast(
     if len(cleaned) == 0:
         return {
             "item_id": item_id,
-            "forecast": [0 for _ in range(days)],
+            "forecast": [0] * days,
             "lower": [0] * days,
             "upper": [0] * days,
             "used_method": "mean",
+            "has_data": False,
         }
 
     def mean_forecast() -> Dict[str, Any]:
         avg_sales = int(round(sum(x["sales"] for x in cleaned) / max(1, len(cleaned))))
         return {
             "item_id": item_id,
-            "forecast": [avg_sales for _ in range(days)],
-            "lower": [max(0, int(avg_sales * 0.8)) for _ in range(days)],
-            "upper": [int(avg_sales * 1.2) for _ in range(days)],
+            "forecast": [avg_sales] * days,
+            "lower": [max(0, int(avg_sales * 0.8))] * days,
+            "upper": [int(avg_sales * 1.2)] * days,
             "used_method": "mean",
+            "has_data": True,
         }
 
     selected = method
     if method == "auto":
-        selected = "prophet" if PROPHET_AVAILABLE else "arima"
+        # Use Prophet only when there's enough data for it to be reliable
+        if PROPHET_AVAILABLE and len(cleaned) >= _PROPHET_MIN_POINTS:
+            selected = "prophet"
+        else:
+            selected = "arima"
 
     if selected == "prophet" and PROPHET_AVAILABLE:
+        if len(cleaned) < 2:
+            logger.warning("item_id=%s: not enough data for prophet (%d pts), falling back to mean", item_id, len(cleaned))
+            return mean_forecast()
         try:
             import pandas as pd
 
             df = pd.DataFrame(cleaned)
             df["ds"] = pd.to_datetime(df["date"])
-            df["y"] = df["sales"]
-            prophet_df = df[["ds", "y"]].sort_values("ds")
+            df["y"] = df["sales"].astype(float)
+            prophet_df = df[["ds", "y"]].sort_values("ds").drop_duplicates("ds")
             m = Prophet(
                 yearly_seasonality=len(prophet_df) >= 730,
                 weekly_seasonality=len(prophet_df) >= 14,
@@ -83,15 +96,18 @@ def compute_forecast(
                 "lower": lower,
                 "upper": upper,
                 "used_method": "prophet",
+                "has_data": True,
             }
-        except Exception:
-            return mean_forecast()
+        except Exception as exc:
+            logger.warning("item_id=%s: prophet failed (%s), falling back to arima", item_id, exc)
+            selected = "arima"
 
     if selected == "arima":
+        series = np.array([x["sales"] for x in cleaned], dtype=float)
+        if len(series) < 3:
+            logger.info("item_id=%s: only %d pts, using mean instead of arima", item_id, len(series))
+            return mean_forecast()
         try:
-            series = np.array([x["sales"] for x in cleaned], dtype=float)
-            if len(series) < 3:
-                return mean_forecast()
             model = ARIMA(series, order=(1, 1, 1))
             res = model.fit()
             fc = res.forecast(steps=days)
@@ -107,8 +123,10 @@ def compute_forecast(
                 "lower": lower,
                 "upper": upper,
                 "used_method": "arima",
+                "has_data": True,
             }
-        except Exception:
+        except Exception as exc:
+            logger.warning("item_id=%s: arima failed (%s), falling back to mean", item_id, exc)
             return mean_forecast()
 
     return mean_forecast()

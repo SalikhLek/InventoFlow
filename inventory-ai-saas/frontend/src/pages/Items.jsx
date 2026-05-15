@@ -4,7 +4,6 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Paper,
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SellIcon from '@mui/icons-material/Sell';
@@ -128,7 +127,7 @@ export default function Items() {
       setTransactionOpen(false);
       load();
     } catch (err) {
-      alert(err.response?.data?.detail || err.response?.data?.message || 'Ошибка выполнения операции');
+      alert(err.response?.data?.message || err.message || 'Ошибка выполнения операции');
     }
   };
 
@@ -477,7 +476,7 @@ export default function Items() {
               <Grid item xs={12} sm={6}>
                 <TextField 
                   fullWidth 
-                  label="Цена за единицу (₽)" 
+                  label="Цена за единицу (₸)" 
                   type="number" 
                   value={transactionForm.price || transactionItem?.price || ''} 
                   onChange={(e) => setTransactionForm({ ...transactionForm, price: Number(e.target.value) })}
