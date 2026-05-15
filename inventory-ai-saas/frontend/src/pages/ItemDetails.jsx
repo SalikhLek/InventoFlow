@@ -34,6 +34,7 @@ export default function ItemDetails() {
   const [forecast, setForecast] = useState([]);
   const [usedMethod, setUsedMethod] = useState('');
   const [loading, setLoading] = useState(false);
+  const [noDataMsg, setNoDataMsg] = useState('');
   const { mode } = useThemeMode();
   const isDark = mode === 'dark';
 
@@ -51,11 +52,12 @@ export default function ItemDetails() {
     try {
       const { data } = await api.get(`/items/${id}/forecast`, { params: { days, method } });
       if (!data.has_data) {
-        alert('У этого товара нет истории продаж. Добавьте транзакции типа «продажа», чтобы получить прогноз.');
+        setNoDataMsg('У этого товара нет истории продаж. Добавьте транзакции типа «продажа», чтобы получить прогноз.');
         setForecast([]);
         setUsedMethod('');
         return;
       }
+      setNoDataMsg('');
       setUsedMethod(data.used_method);
       const mapped = data.forecast.map((y, i) => ({
         день: i + 1,
@@ -66,7 +68,9 @@ export default function ItemDetails() {
       setForecast(mapped);
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Ошибка получения прогноза';
-      alert(message);
+      setNoDataMsg(message);
+      setForecast([]);
+      setUsedMethod('');
     } finally {
       setLoading(false);
     }
@@ -174,6 +178,13 @@ export default function ItemDetails() {
               <Chip label={`Метод: ${usedMethod.toUpperCase()}`} size="small" sx={{ ml: 1 }} />
             )}
           </Stack>
+          {noDataMsg && (
+            <Box sx={{ p: 3, borderRadius: 2, bgcolor: isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', mt: 1 }}>
+              <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500 }}>
+                ⚠ {noDataMsg}
+              </Typography>
+            </Box>
+          )}
           {forecast.length > 0 && (
             <>
               <Typography variant="h6" gutterBottom sx={{ mb: 2, fontWeight: 600 }}>

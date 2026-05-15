@@ -296,15 +296,36 @@ export default function Analytics() {
                 <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
                   Загрузка прогнозов...
                 </Typography>
-              ) : Object.keys(forecasts).length === 0 ? (
+              ) : items.length === 0 ? (
                 <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                  Нет данных о продажах для построения прогноза. Добавьте транзакции типа «продажа» для ваших товаров.
+                  Нет товаров. Добавьте товары и транзакции типа «продажа» для получения прогнозов.
                 </Typography>
               ) : (
                 <Grid container spacing={3}>
                   {items.slice(0, 6).map((item) => {
                     const forecast = forecasts[item.id];
-                    if (!forecast || forecast.forecast.length === 0) return null;
+
+                    if (!forecast || forecast.forecast.length === 0) {
+                      return (
+                        <Grid item xs={12} md={6} key={item.id}>
+                          <Card variant="outlined" sx={{ opacity: 0.6 }}>
+                            <CardContent>
+                              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', mb: 1 }}>
+                                {item.name}
+                              </Typography>
+                              <Box sx={{ py: 3, textAlign: 'center' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  Нет данных о продажах
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  Добавьте транзакции типа «продажа»
+                                </Typography>
+                              </Box>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      );
+                    }
 
                     return (
                       <Grid item xs={12} md={6} key={item.id}>
