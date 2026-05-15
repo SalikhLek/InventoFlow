@@ -219,7 +219,7 @@ export default function ItemDetails() {
                       <Area type="monotone" dataKey="верхняя" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.15} activeDot={false} dot={false} />
                     </>
                   )}
-                  <Line type="monotone" dataKey="прогноз" stroke="#6366f1" strokeWidth={3} dot={{ r: 4, fill: '#6366f1' }} activeDot={{ r: 6 }} />
+                  <Area type="monotone" dataKey="прогноз" stroke="#6366f1" fill="#6366f1" fillOpacity={0.2} strokeWidth={3} dot={{ r: 4, fill: '#6366f1' }} activeDot={{ r: 6 }} />
                   <Legend />
                 </AreaChart>
               </ResponsiveContainer>
