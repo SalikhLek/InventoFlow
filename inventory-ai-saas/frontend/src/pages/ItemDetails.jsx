@@ -34,6 +34,7 @@ export default function ItemDetails() {
   const [forecast, setForecast] = useState([]);
   const [usedMethod, setUsedMethod] = useState('');
   const [loading, setLoading] = useState(false);
+  const [noDataMsg, setNoDataMsg] = useState('');
   const { mode } = useThemeMode();
   const isDark = mode === 'dark';
 
@@ -50,6 +51,13 @@ export default function ItemDetails() {
     setLoading(true);
     try {
       const { data } = await api.get(`/items/${id}/forecast`, { params: { days, method } });
+      if (!data.has_data) {
+        setNoDataMsg('У этого товара нет истории продаж. Добавьте транзакции типа «продажа», чтобы получить прогноз.');
+        setForecast([]);
+        setUsedMethod('');
+        return;
+      }
+      setNoDataMsg('');
       setUsedMethod(data.used_method);
       const mapped = data.forecast.map((y, i) => ({
         день: i + 1,
@@ -60,7 +68,9 @@ export default function ItemDetails() {
       setForecast(mapped);
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Ошибка получения прогноза';
-      alert(message);
+      setNoDataMsg(message);
+      setForecast([]);
+      setUsedMethod('');
     } finally {
       setLoading(false);
     }
@@ -168,6 +178,13 @@ export default function ItemDetails() {
               <Chip label={`Метод: ${usedMethod.toUpperCase()}`} size="small" sx={{ ml: 1 }} />
             )}
           </Stack>
+          {noDataMsg && (
+            <Box sx={{ p: 3, borderRadius: 2, bgcolor: isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', mt: 1 }}>
+              <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500 }}>
+                ⚠ {noDataMsg}
+              </Typography>
+            </Box>
+          )}
           {forecast.length > 0 && (
             <>
               <Typography variant="h6" gutterBottom sx={{ mb: 2, fontWeight: 600 }}>
@@ -202,7 +219,7 @@ export default function ItemDetails() {
                       <Area type="monotone" dataKey="верхняя" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.15} activeDot={false} dot={false} />
                     </>
                   )}
-                  <Line type="monotone" dataKey="прогноз" stroke="#6366f1" strokeWidth={3} dot={{ r: 4, fill: '#6366f1' }} activeDot={{ r: 6 }} />
+                  <Area type="monotone" dataKey="прогноз" stroke="#6366f1" fill="#6366f1" fillOpacity={0.2} strokeWidth={3} dot={{ r: 4, fill: '#6366f1' }} activeDot={{ r: 6 }} />
                   <Legend />
                 </AreaChart>
               </ResponsiveContainer>

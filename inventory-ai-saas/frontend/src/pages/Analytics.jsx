@@ -67,19 +67,20 @@ export default function Analytics() {
   const loadForecasts = async () => {
     setLoadingForecasts(true);
     const forecastData = {};
-    if (items.length === 0) {
+    const displayedItems = items.slice(0, 6);
+    if (displayedItems.length === 0) {
       setForecasts(forecastData);
       setLoadingForecasts(false);
       return;
     }
     try {
       const { data } = await api.post('/items/forecasts/batch', {
-        item_ids: items.map((it) => it.id),
+        item_ids: displayedItems.map((it) => it.id),
         days: forecastDays,
         method: forecastMethod,
       });
       const results = data.results || {};
-      for (const item of items) {
+      for (const item of displayedItems) {
         const r = results[String(item.id)];
         if (!r || r.error) {
           if (r?.error) {
@@ -87,6 +88,8 @@ export default function Analytics() {
           }
           continue;
         }
+        // Skip items with no real sales data (all zeros)
+        if (!r.has_data) continue;
         forecastData[item.id] = {
           forecast: r.forecast.map((val, idx) => ({
             день: idx + 1,
@@ -206,7 +209,7 @@ export default function Analytics() {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
+          <Card sx={{
             background: isDark
               ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%)'
               : 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.04) 100%)',
@@ -214,19 +217,19 @@ export default function Analytics() {
           }}>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Box sx={{ 
-                  p: 1.5, 
-                  borderRadius: 2, 
+                <Box sx={{
+                  p: 1.5,
+                  borderRadius: 2,
                   bgcolor: 'warning.main',
                 }}>
-                  <TrendingUpIcon sx={{ color: 'white' }} />
+                  <InventoryIcon sx={{ color: 'white' }} />
                 </Box>
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Низкий запас
+                    Общее количество
                   </Typography>
                   <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    {stats.lowStock || 0}
+                    {stats.totalQuantity || 0}
                   </Typography>
                 </Box>
               </Stack>
@@ -293,12 +296,37 @@ export default function Analytics() {
                 <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
                   Загрузка прогнозов...
                 </Typography>
+              ) : items.length === 0 ? (
+                <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                  Нет товаров. Добавьте товары и транзакции типа «продажа» для получения прогнозов.
+                </Typography>
               ) : (
                 <Grid container spacing={3}>
                   {items.slice(0, 6).map((item) => {
                     const forecast = forecasts[item.id];
-                    if (!forecast || forecast.forecast.length === 0) return null;
-                    
+
+                    if (!forecast || forecast.forecast.length === 0) {
+                      return (
+                        <Grid item xs={12} md={6} key={item.id}>
+                          <Card variant="outlined" sx={{ opacity: 0.6 }}>
+                            <CardContent>
+                              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', mb: 1 }}>
+                                {item.name}
+                              </Typography>
+                              <Box sx={{ py: 3, textAlign: 'center' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  Нет данных о продажах
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  Добавьте транзакции типа «продажа»
+                                </Typography>
+                              </Box>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      );
+                    }
+
                     return (
                       <Grid item xs={12} md={6} key={item.id}>
                         <Card variant="outlined">
