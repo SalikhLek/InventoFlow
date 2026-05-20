@@ -4,6 +4,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
+import HistoryIcon from '@mui/icons-material/History';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -47,6 +48,7 @@ export default function AppLayout() {
     { to: '/', label: 'Панель управления', icon: <DashboardIcon /> },
     { to: '/items', label: 'Товары', icon: <InventoryIcon /> },
     { to: '/analytics', label: 'Аналитика', icon: <AnalyticsIcon /> },
+    { to: '/transactions', label: 'История операций', icon: <HistoryIcon /> },
     { to: '/settings', label: 'Настройки', icon: <SettingsIcon /> },
   ];
 

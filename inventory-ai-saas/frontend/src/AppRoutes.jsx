@@ -9,6 +9,7 @@ import Items from './pages/Items';
 import ItemDetails from './pages/ItemDetails';
 import Settings from './pages/Settings';
 import Analytics from './pages/Analytics';
+import TransactionHistory from './pages/TransactionHistory';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -27,6 +28,7 @@ export default function AppRoutes() {
                 <Route path="items" element={<Items />} />
                 <Route path="items/:id" element={<ItemDetails />} />
                 <Route path="analytics" element={<Analytics />} />
+                <Route path="transactions" element={<TransactionHistory />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
             </Route>

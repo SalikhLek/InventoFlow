@@ -113,6 +113,9 @@ def read_transactions(
     item_id: Optional[int] = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(10000, ge=1, le=50000),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    transaction_type: Optional[str] = Query(None),
     current_user: User = Depends(get_current_user),
     conn: sqlite3.Connection = Depends(get_db),
 ):
@@ -124,6 +127,9 @@ def read_transactions(
             item_id=item_id,
             skip=skip,
             limit=limit,
+            date_from=date_from,
+            date_to=date_to,
+            transaction_type=transaction_type,
         )
     except sqlite3.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

@@ -9,15 +9,10 @@
 Откройте первый терминал и выполните:
 
 ```bash
-cd inventory-ai-saas/backend
-source venv/bin/activate  # Активируйте виртуальное окружение
+cd inventory-ai-saas
+source .venv/bin/activate
+cd backend
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-Или если вы в папке backend:
-```bash
-source venv/bin/activate
-uvicorn main:app --reload
 ```
 
 Backend запустится на: http://localhost:8000
@@ -36,21 +31,12 @@ npm start
 
 Frontend автоматически откроется в браузере на: http://localhost:3000
 
-## Альтернативный способ запуска Backend
-
-Если хотите запускать через `python app.py`:
-```bash
-cd inventory-ai-saas/backend
-source venv/bin/activate
-python app.py
-```
-
 ## Примечания
 
 - Убедитесь, что Python 3 и Node.js установлены
 - Если зависимости не установлены:
-  - Backend: `pip install -r requirements.txt` (в виртуальном окружении)
-  - Frontend: `npm install` (в папке frontend)
+  - Backend: `pip install -r requirements.txt` (из папки `inventory-ai-saas/`, с активированным `.venv`)
+  - Frontend: `npm install` (в папке `frontend/`)
 
 ## Остановка серверов
 

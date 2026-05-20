@@ -1,0 +1,88 @@
+@startuml use_case_admin
+title Use Case — Администратор (InventoFlow)
+
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam usecase {
+    BackgroundColor #EEF4FF
+    BorderColor #4A6CF7
+    ArrowColor #4A6CF7
+}
+skinparam actor {
+    BackgroundColor #4A6CF7
+    FontColor #FFFFFF
+    BorderColor #2D4ACC
+}
+
+actor "Администратор" as Admin
+
+rectangle "InventoFlow — Панель администратора" {
+
+    package "Аутентификация" {
+        usecase "Войти в систему" as UC_Login
+        usecase "Выйти из системы" as UC_Logout
+    }
+
+    package "Управление компаниями" {
+        usecase "Просмотреть список компаний" as UC_CompanyList
+        usecase "Создать компанию" as UC_CompanyCreate
+        usecase "Удалить компанию" as UC_CompanyDelete
+        usecase "Просмотреть детали компании" as UC_CompanyDetail
+    }
+
+    package "Управление пользователями" {
+        usecase "Просмотреть всех пользователей" as UC_UserList
+        usecase "Назначить роль пользователю" as UC_UserRole
+        usecase "Деактивировать пользователя" as UC_UserDeactivate
+    }
+
+    package "Управление API-ключами" {
+        usecase "Просмотреть все API-ключи" as UC_KeyList
+        usecase "Отозвать API-ключ" as UC_KeyRevoke
+    }
+
+    package "Мониторинг и аналитика" {
+        usecase "Просмотреть системные метрики" as UC_Metrics
+        usecase "Просмотреть все транзакции" as UC_AllTx
+        usecase "Просмотреть прогнозы всех компаний" as UC_AllForecast
+    }
+
+    package "Тарифные планы" {
+        usecase "Управлять тарифными планами" as UC_Plans
+        usecase "Назначить план компании" as UC_AssignPlan
+        usecase "Установить лимиты компании" as UC_Limits
+    }
+}
+
+Admin --> UC_Login
+Admin --> UC_Logout
+
+Admin --> UC_CompanyList
+Admin --> UC_CompanyCreate
+Admin --> UC_CompanyDelete
+Admin --> UC_CompanyDetail
+
+Admin --> UC_UserList
+Admin --> UC_UserRole
+Admin --> UC_UserDeactivate
+
+Admin --> UC_KeyList
+Admin --> UC_KeyRevoke
+
+Admin --> UC_Metrics
+Admin --> UC_AllTx
+Admin --> UC_AllForecast
+
+Admin --> UC_Plans
+Admin --> UC_AssignPlan
+Admin --> UC_Limits
+
+UC_CompanyCreate ..> UC_Login : <<include>>
+UC_UserRole ..> UC_Login : <<include>>
+UC_KeyRevoke ..> UC_Login : <<include>>
+UC_AssignPlan ..> UC_Plans : <<include>>
+UC_Limits ..> UC_Plans : <<include>>
+
+@enduml

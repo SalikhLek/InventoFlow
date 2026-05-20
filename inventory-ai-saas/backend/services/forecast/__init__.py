@@ -1,3 +1,3 @@
-from services.forecast.engine import compute_forecast
+from .engine import compute_forecast, compute_forecast_compare
 
-__all__ = ["compute_forecast"]
+__all__ = ["compute_forecast", "compute_forecast_compare"]
