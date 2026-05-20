@@ -1,0 +1,101 @@
+@startuml use_case_user
+title Use Case — Пользователь компании (InventoFlow)
+
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam usecase {
+    BackgroundColor #EEFAF0
+    BorderColor #27AE60
+    ArrowColor #27AE60
+}
+skinparam actor {
+    BackgroundColor #27AE60
+    FontColor #FFFFFF
+    BorderColor #1E8449
+}
+
+actor "Пользователь" as User
+
+rectangle "InventoFlow — Рабочее пространство" {
+
+    package "Аутентификация" {
+        usecase "Зарегистрироваться" as UC_Register
+        usecase "Войти в систему" as UC_Login
+        usecase "Выйти из системы" as UC_Logout
+        usecase "Редактировать профиль" as UC_Profile
+    }
+
+    package "Управление товарами" {
+        usecase "Просмотреть список товаров" as UC_ItemList
+        usecase "Добавить товар" as UC_ItemCreate
+        usecase "Редактировать товар" as UC_ItemEdit
+        usecase "Удалить товар" as UC_ItemDelete
+        usecase "Просмотреть детали товара" as UC_ItemDetail
+    }
+
+    package "Транзакции" {
+        usecase "Добавить транзакцию (приход/расход)" as UC_TxCreate
+        usecase "Просмотреть историю транзакций" as UC_TxList
+        usecase "Экспортировать транзакции (Excel)" as UC_TxExport
+    }
+
+    package "Прогнозирование" {
+        usecase "Просмотреть прогноз спроса" as UC_Forecast
+        usecase "Выбрать метод прогноза (Prophet / ARIMA)" as UC_ForecastMethod
+        usecase "Сравнить Prophet и ARIMA" as UC_ForecastCompare
+        usecase "Экспортировать прогноз" as UC_ForecastExport
+    }
+
+    package "API-ключи" {
+        usecase "Создать API-ключ" as UC_KeyCreate
+        usecase "Просмотреть свои API-ключи" as UC_KeyList
+        usecase "Удалить API-ключ" as UC_KeyDelete
+    }
+
+    package "Уведомления" {
+        usecase "Настроить уведомление о низком остатке" as UC_NotifySetup
+        usecase "Получить email-уведомление" as UC_NotifyReceive
+    }
+}
+
+User --> UC_Register
+User --> UC_Login
+User --> UC_Logout
+User --> UC_Profile
+
+User --> UC_ItemList
+User --> UC_ItemCreate
+User --> UC_ItemEdit
+User --> UC_ItemDelete
+User --> UC_ItemDetail
+
+User --> UC_TxCreate
+User --> UC_TxList
+User --> UC_TxExport
+
+User --> UC_Forecast
+User --> UC_ForecastMethod
+User --> UC_ForecastCompare
+User --> UC_ForecastExport
+
+User --> UC_KeyCreate
+User --> UC_KeyList
+User --> UC_KeyDelete
+
+User --> UC_NotifySetup
+User --> UC_NotifyReceive
+
+UC_Forecast ..> UC_ForecastMethod : <<extend>>
+UC_ForecastCompare ..> UC_Forecast : <<include>>
+UC_ForecastExport ..> UC_Forecast : <<include>>
+UC_TxExport ..> UC_TxList : <<include>>
+UC_ItemDetail ..> UC_Forecast : <<extend>>
+UC_NotifyReceive ..> UC_NotifySetup : <<include>>
+
+UC_ItemCreate ..> UC_Login : <<include>>
+UC_TxCreate ..> UC_Login : <<include>>
+UC_KeyCreate ..> UC_Login : <<include>>
+
+@enduml

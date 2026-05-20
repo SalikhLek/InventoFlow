@@ -1,7 +1,7 @@
 import { Card, CardContent, Grid, Typography, Box, Stack, Select, MenuItem, FormControl, InputLabel, Button, Chip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from 'recharts';
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area, Legend } from 'recharts';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -260,7 +260,7 @@ export default function Analytics() {
                     <Select value={forecastMethod} label="Метод" onChange={(e) => setForecastMethod(e.target.value)}>
                       <MenuItem value="auto">Авто</MenuItem>
                       <MenuItem value="prophet">Prophet</MenuItem>
-                      <MenuItem value="arima">ARIMA</MenuItem>
+                      <MenuItem value="sarima">SARIMA</MenuItem>
                       <MenuItem value="mean">Средний</MenuItem>
                     </Select>
                   </FormControl>
@@ -308,17 +308,14 @@ export default function Analytics() {
                     if (!forecast || forecast.forecast.length === 0) {
                       return (
                         <Grid item xs={12} md={6} key={item.id}>
-                          <Card variant="outlined" sx={{ opacity: 0.6 }}>
+                          <Card variant="outlined">
                             <CardContent>
-                              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', mb: 1 }}>
+                              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', mb: 2 }}>
                                 {item.name}
                               </Typography>
-                              <Box sx={{ py: 3, textAlign: 'center' }}>
-                                <Typography variant="body2" color="text.secondary">
-                                  Нет данных о продажах
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  Добавьте транзакции типа «продажа»
+                              <Box sx={{ p: 2, borderRadius: 2, bgcolor: isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)' }}>
+                                <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500 }}>
+                                  ⚠ Прогноз недоступен: нет истории продаж. Добавьте транзакцию типа «Продать», чтобы получить прогноз.
                                 </Typography>
                               </Box>
                             </CardContent>
@@ -345,32 +342,12 @@ export default function Analytics() {
                                 <ThemedTooltip />
                                 {forecast.forecast[0].нижняя !== undefined && forecast.forecast[0].верхняя !== undefined && (
                                   <>
-                                    <Area 
-                                      type="monotone" 
-                                      dataKey="нижняя" 
-                                      stroke="#94a3b8" 
-                                      fill="#94a3b8" 
-                                      fillOpacity={0.15} 
-                                      strokeWidth={1}
-                                    />
-                                    <Area 
-                                      type="monotone" 
-                                      dataKey="верхняя" 
-                                      stroke="#94a3b8" 
-                                      fill="#94a3b8" 
-                                      fillOpacity={0.15} 
-                                      strokeWidth={1}
-                                    />
+                                    <Area type="monotone" dataKey="нижняя" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.15} strokeWidth={1} activeDot={false} dot={false} />
+                                    <Area type="monotone" dataKey="верхняя" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.15} strokeWidth={1} activeDot={false} dot={false} />
                                   </>
                                 )}
-                                <Area 
-                                  type="monotone" 
-                                  dataKey="прогноз" 
-                                  stroke="#6366f1" 
-                                  fill="#6366f1" 
-                                  fillOpacity={0.3} 
-                                  strokeWidth={2}
-                                />
+                                <Area type="monotone" dataKey="прогноз" stroke="#6366f1" fill="#6366f1" fillOpacity={0.3} strokeWidth={2} dot={{ r: 3, fill: '#6366f1' }} activeDot={{ r: 5 }} />
+                                <Legend />
                               </AreaChart>
                             </ResponsiveContainer>
                           </CardContent>

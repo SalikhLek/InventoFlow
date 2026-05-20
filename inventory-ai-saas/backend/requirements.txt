@@ -7,6 +7,7 @@ numpy>=1.24
 pandas>=2.0
 prophet>=1.1.5
 statsmodels>=0.14
+pmdarima>=2.0
 structlog>=24.1.0
 prometheus-client>=0.20.0
 prometheus-fastapi-instrumentator>=7.0.0

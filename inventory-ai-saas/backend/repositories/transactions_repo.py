@@ -12,63 +12,59 @@ def list_transactions(
     item_id: Optional[int],
     skip: int,
     limit: int,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    transaction_type: Optional[str] = None,
 ) -> Tuple[List[Transaction], int]:
-    cur = conn.cursor()
+    conditions = []
+    params = []
+
     if item_id is not None:
-        if is_admin:
-            cur.execute("SELECT COUNT(*) FROM transactions WHERE item_id=?", (item_id,))
-            total = cur.fetchone()[0]
-            cur.execute(
-                """
-                SELECT id, item_id, transaction_type, quantity, price, transaction_date, company_id, notes, created_at
-                FROM transactions WHERE item_id=?
-                ORDER BY transaction_date DESC, created_at DESC
-                LIMIT ? OFFSET ?
-                """,
-                (item_id, limit, skip),
-            )
-        else:
-            cur.execute(
-                "SELECT COUNT(*) FROM transactions WHERE item_id=? AND company_id=?",
-                (item_id, company_id),
-            )
-            total = cur.fetchone()[0]
-            cur.execute(
-                """
-                SELECT id, item_id, transaction_type, quantity, price, transaction_date, company_id, notes, created_at
-                FROM transactions WHERE item_id=? AND company_id=?
-                ORDER BY transaction_date DESC, created_at DESC
-                LIMIT ? OFFSET ?
-                """,
-                (item_id, company_id, limit, skip),
-            )
-    else:
-        if is_admin:
-            cur.execute("SELECT COUNT(*) FROM transactions")
-            total = cur.fetchone()[0]
-            cur.execute(
-                """
-                SELECT id, item_id, transaction_type, quantity, price, transaction_date, company_id, notes, created_at
-                FROM transactions
-                ORDER BY transaction_date DESC, created_at DESC
-                LIMIT ? OFFSET ?
-                """,
-                (limit, skip),
-            )
-        else:
-            cur.execute("SELECT COUNT(*) FROM transactions WHERE company_id=?", (company_id,))
-            total = cur.fetchone()[0]
-            cur.execute(
-                """
-                SELECT id, item_id, transaction_type, quantity, price, transaction_date, company_id, notes, created_at
-                FROM transactions WHERE company_id=?
-                ORDER BY transaction_date DESC, created_at DESC
-                LIMIT ? OFFSET ?
-                """,
-                (company_id, limit, skip),
-            )
+        conditions.append("t.item_id=?")
+        params.append(item_id)
+
+    if not is_admin:
+        conditions.append("t.company_id=?")
+        params.append(company_id)
+
+    if date_from:
+        conditions.append("t.transaction_date >= ?")
+        params.append(date_from)
+
+    if date_to:
+        conditions.append("t.transaction_date <= ?")
+        params.append(date_to + "T23:59:59" if "T" not in date_to else date_to)
+
+    if transaction_type:
+        conditions.append("t.transaction_type=?")
+        params.append(transaction_type)
+
+    where_clause = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+
+    base_query = f"""
+        FROM transactions t
+        LEFT JOIN items i ON t.item_id = i.id
+        {where_clause}
+    """
+
+    cur = conn.cursor()
+    cur.execute(f"SELECT COUNT(*) {base_query}", params)
+    total = cur.fetchone()[0]
+
+    cur.execute(
+        f"""
+        SELECT t.id, t.item_id, t.transaction_type, t.quantity, t.price,
+               t.transaction_date, t.company_id, t.notes, t.created_at,
+               i.name as item_name
+        {base_query}
+        ORDER BY t.transaction_date DESC, t.created_at DESC
+        LIMIT ? OFFSET ?
+        """,
+        params + [limit, skip],
+    )
     rows = cur.fetchall()
     cur.close()
+
     out = [
         Transaction(
             id=row["id"],
@@ -80,6 +76,7 @@ def list_transactions(
             company_id=row["company_id"],
             notes=row["notes"],
             created_at=row["created_at"],
+            item_name=row["item_name"],
         )
         for row in rows
     ]

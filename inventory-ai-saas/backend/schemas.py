@@ -100,6 +100,7 @@ class Transaction(TransactionBase):
     id: int
     company_id: int
     created_at: str
+    item_name: Optional[str] = None
 
 
 class ProfileUpdate(BaseModel):
@@ -115,4 +116,4 @@ class PasswordChange(BaseModel):
 class BatchForecastRequest(BaseModel):
     item_ids: List[int] = Field(..., min_length=1, max_length=200)
     days: int = Field(7, ge=1, le=30)
-    method: str = Field("auto", pattern="^(auto|prophet|arima|mean)$")
+    method: str = Field("auto", pattern="^(auto|prophet|sarima|mean|compare)$")
