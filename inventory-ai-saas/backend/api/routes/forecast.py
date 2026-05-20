@@ -1,7 +1,5 @@
-import json
 import logging
 import sqlite3
-from collections import defaultdict
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -11,7 +9,6 @@ from core.database import get_db
 from observability.metrics import FORECAST_BATCH_ITEMS, FORECAST_REQUESTS
 from schemas import BatchForecastRequest, User
 from services.forecast.engine import compute_forecast, compute_forecast_compare
-from services.inventory.sales_history import aggregate_sales_by_day
 
 logger = logging.getLogger(__name__)
 
@@ -23,38 +20,26 @@ def _get_company_fallback_history(
     company_id: int,
     exclude_item_id: int,
 ) -> List[Dict[str, Any]]:
-    """Return synthetic sales history representing company-wide daily average, excluding the given item."""
+    """Company-wide daily average sales (excluding the given item) for cold-start."""
     cur = conn.cursor()
     cur.execute(
-        "SELECT sales_history FROM items WHERE company_id=? AND id != ?",
+        """
+        SELECT DATE(transaction_date) as date, SUM(quantity) as sales, COUNT(DISTINCT item_id) as item_count
+        FROM transactions
+        WHERE company_id=? AND item_id != ? AND transaction_type='sell'
+        GROUP BY DATE(transaction_date)
+        ORDER BY DATE(transaction_date)
+        """,
         (company_id, exclude_item_id),
     )
     rows = cur.fetchall()
     cur.close()
 
-    date_totals: Dict[str, float] = defaultdict(float)
-    date_counts: Dict[str, int] = defaultdict(int)
-    for row in rows:
-        raw = json.loads(row["sales_history"]) if row["sales_history"] else []
-        if not isinstance(raw, list):
-            continue
-        for entry in raw:
-            if not isinstance(entry, dict) or "date" not in entry or "sales" not in entry:
-                continue
-            try:
-                sales = float(entry["sales"])
-            except (TypeError, ValueError):
-                continue
-            d = str(entry["date"]).strip()
-            if d:
-                date_totals[d] += sales
-                date_counts[d] += 1
-
-    if not date_totals:
+    if not rows:
         return []
     return [
-        {"date": d, "sales": round(date_totals[d] / date_counts[d], 2)}
-        for d in sorted(date_totals)
+        {"date": r["date"], "sales": round(r["sales"] / max(r["item_count"], 1), 2)}
+        for r in rows
     ]
 
 
@@ -67,30 +52,37 @@ def _load_sales_and_forecast(
 ) -> Dict[str, Any]:
     cur = conn.cursor()
     if current_user.role == "admin":
-        cur.execute("SELECT sales_history, company_id FROM items WHERE id=?", (item_id,))
+        cur.execute("SELECT company_id FROM items WHERE id=?", (item_id,))
     else:
         cur.execute(
-            "SELECT sales_history, company_id FROM items WHERE id=? AND company_id=?",
+            "SELECT company_id FROM items WHERE id=? AND company_id=?",
             (item_id, current_user.company_id),
         )
     row = cur.fetchone()
-    cur.close()
     if not row:
+        cur.close()
         raise HTTPException(status_code=404, detail="Item not found")
 
-    raw_sales_history = json.loads(row["sales_history"]) if row["sales_history"] else []
-    if not isinstance(raw_sales_history, list):
-        raise HTTPException(status_code=400, detail="sales_history should be a list of {'date','sales'} dicts")
+    company_id = row["company_id"]
 
-    cleaned = [
-        x
-        for x in raw_sales_history
-        if isinstance(x, dict) and "date" in x and "sales" in x and isinstance(x["sales"], (int, float))
-    ]
-    by_day = aggregate_sales_by_day(cleaned)
+    # Read sales from transactions table (sell transactions grouped by date)
+    cur.execute(
+        """
+        SELECT DATE(transaction_date) as date, SUM(quantity) as sales
+        FROM transactions
+        WHERE item_id=? AND transaction_type='sell'
+        GROUP BY DATE(transaction_date)
+        ORDER BY DATE(transaction_date)
+        """,
+        (item_id,),
+    )
+    tx_rows = cur.fetchall()
+    cur.close()
 
-    if len(by_day) == 0 and row["company_id"] is not None:
-        fallback = _get_company_fallback_history(conn, row["company_id"], item_id)
+    by_day = [{"date": r["date"], "sales": r["sales"]} for r in tx_rows]
+
+    if len(by_day) == 0 and company_id is not None:
+        fallback = _get_company_fallback_history(conn, company_id, item_id)
         if fallback:
             logger.info("item_id=%s: cold-start, using %d company-avg points", item_id, len(fallback))
             by_day = fallback
