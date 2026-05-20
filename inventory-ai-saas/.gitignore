@@ -7,6 +7,9 @@
 
 inventory-ai-saas/backend/inventory.db
 inventory-ai-saas/backend/venv/
+inventory-ai-saas/.venv/
+.venv/
+venv/
 inventory-ai-saas/frontend/node_modules/
 .log
 pycache_/
