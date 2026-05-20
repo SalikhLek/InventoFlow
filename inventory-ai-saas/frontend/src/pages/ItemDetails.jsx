@@ -86,6 +86,13 @@ export default function ItemDetails() {
 
   useEffect(() => { load(); loadTransactions(); }, [id]);
 
+  // Auto-run forecast after transactions load, if there are any sales
+  useEffect(() => {
+    if (transactions.some((tx) => tx.transaction_type === 'sell')) {
+      fetchForecast();
+    }
+  }, [transactions.length]);
+
   // --- Forecast ---
   const fetchForecast = async () => {
     setForecastLoading(true);

@@ -6,11 +6,11 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from routers import admin, api_keys, auth, companies, forecast, items, transactions
-from config import settings
-from database import init_db
-from logging_config import setup_logging
-from middleware import RequestContextMiddleware
+from api.routes import admin, api_keys, auth, companies, forecast, items, transactions
+from core.config import settings
+from core.database import init_db
+from observability.logging import setup_logging
+from observability.middleware import RequestContextMiddleware
 
 setup_logging()
 init_db()
