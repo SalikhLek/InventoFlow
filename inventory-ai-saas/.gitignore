@@ -12,8 +12,11 @@ inventory-ai-saas/.venv/
 venv/
 inventory-ai-saas/frontend/node_modules/
 .log
-pycache_/
-.pyc
+__pycache__/
+*.pyc
+*.pyo
+*.DS_Store
+.DS_Store
 .env
 
 # testing
